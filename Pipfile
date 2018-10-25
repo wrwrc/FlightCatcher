@@ -1,0 +1,31 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"asn1crypto" = "*"
+certifi = "*"
+cffi = "*"
+chardet = "*"
+cryptography = "*"
+django-filter = "*"
+djangorestframework = "*"
+idna = "*"
+mysql-connector-python = "==8.*"
+protobuf = "*"
+pycparser = "*"
+pytz = "*"
+requests = "*"
+six = "*"
+"urllib3" = "*"
+Django = "*"
+Markdown = "*"
+python-daemon = "*"
+
+[dev-packages]
+pylint = "*"
+pylint-django = "*"
+
+[requires]
+python_version = "3"
