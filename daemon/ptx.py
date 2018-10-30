@@ -24,7 +24,10 @@ class Client(object):
 
     def get(self, rel_path):
         headers = self._get_auth_header()
-        path = 'http://ptx.transportdata.tw/MOTC' + rel_path + '?$format=JSON'
+        path = 'http://ptx.transportdata.tw/MOTC' +\
+                rel_path +\
+                ('&' if '?' in rel_path else '?') +\
+                '$format=JSON'
         resp = requests.get(path, headers = headers)
         resp.raise_for_status()
         return resp.json()

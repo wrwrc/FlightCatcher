@@ -1,0 +1,16 @@
+[Unit]
+Description=FlightCatcher Daemon
+After=syslog.target network.target network-online.target mysql.service
+
+[Service]
+Type=simple
+Restart=always
+ExecStartPre=/bin/mkdir -p /var/run/flightcatcherd
+PIDFile=/var/run/flightcatcherd/service.pid
+ExecStart=/usr/local/share/flightcatcherd/venv/bin/python /usr/local/share/flightcatcherd/main.py
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=flightcatcherd
+
+[Install]
+WantedBy=multi-user.target

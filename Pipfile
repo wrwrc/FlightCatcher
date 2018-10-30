@@ -21,7 +21,6 @@ six = "*"
 "urllib3" = "*"
 Django = "*"
 Markdown = "*"
-python-daemon = "*"
 
 [dev-packages]
 pylint = "*"

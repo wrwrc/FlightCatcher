@@ -1,1 +1,0 @@
-(crontab -l ; echo "00 00 * * * python3 $PWD/main.py") | crontab -
