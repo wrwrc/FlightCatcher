@@ -1,65 +1,66 @@
+import asyncio
 import sys
 import logging
 import signal
 import time
 from datetime import date
 import config
-from ptx import Client
+import ptx
 from models import MySqlConnection
 from tasks import TaskManager
 
-class LoopController:
-    should_stop = False
+# class LoopController:
+#     should_stop = False
 
-    def __init__(self):
-        self.callbacks = []
-        signal.signal(signal.SIGINT, self.onstop)
-        signal.signal(signal.SIGTERM, self.onstop)
+#     def __init__(self):
+#         self.callbacks = []
+#         signal.signal(signal.SIGINT, self.onstop)
+#         signal.signal(signal.SIGTERM, self.onstop)
 
-    def onstop(self, signum, frame):
-        self.should_stop = True
+#     def onstop(self, signum, frame):
+#         self.should_stop = True
 
-        for fn in self.callbacks:
-            fn()
+#         for fn in self.callbacks:
+#             fn()
 
-    def subscribe(self, fn):
-        self.callbacks.append(fn)
+#     def subscribe(self, fn):
+#         self.callbacks.append(fn)
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(message)s',
-    stream=sys.stderr
-)
-
-loop = LoopController()
-prev_daily = None
-
-while True:
-    start = time.process_time()
-
-    try:
-        client = Client(config.APP_ID, config.APP_KEY)
-
+async def main():
+    prev_daily = None
+    while True:
         with MySqlConnection(**config.DATABASE) as db:
-            task = TaskManager(db, client)
-            loop.subscribe(task.interrupt)
+            ptx_client = ptx.Client(config.APP_ID, config.APP_KEY)
+            task = TaskManager(db, ptx_client)
 
             if not prev_daily or prev_daily < date.today():
-                task.updateairports()
-                task.updateairlines()
-
+                await task.updateairports()
+                await task.updateairlines()
                 prev_daily = date.today()
 
-            task.updateflights()
+            await task.updateflights()
 
-    except Exception:
+        await asyncio.sleep(60)
+
+def sig_callback():
+    raise SystemExit('terminates')
+
+if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(message)s',
+        stream=sys.stderr
+    )
+
+    loop = asyncio.get_event_loop()
+    loop.add_signal_handler(signal.SIGINT, sig_callback)
+    loop.add_signal_handler(signal.SIGTERM, sig_callback)
+
+    try:
+        loop.run_until_complete(main())
+    except SystemExit:
+        pass
+    except:
         logging.exception("Error")
 
-    if loop.should_stop:
-        break
-
-    end = time.process_time()
-
-    wait_time = 120 - round(end - start)
-    if wait_time > 0:
-        time.sleep(wait_time)
+    loop.close()

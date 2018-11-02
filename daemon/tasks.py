@@ -5,8 +5,6 @@ import config
 from models import Flight, MySqlConnection
 
 class TaskManager:
-    interrupted = False
-
     def __init__(self, db, ptx_client):
         self.db = db
         self.ptx_client = ptx_client
@@ -103,14 +101,8 @@ class TaskManager:
     def __isascii(s):
         return len(s) == len(s.encode())
 
-    def updateairports(self):
-        if self.interrupted:
-            return
-
-        json = self.ptx_client.get('/v2/Air/Airport?$orderby=AirportID')
-
-        if self.interrupted:
-            return
+    async def updateairports(self):
+        json = await self.ptx_client.get('/v2/Air/Airport?$orderby=AirportID')
 
         rows = self.db.query("select name_ch, name_en"
                         "      ,icao"
@@ -153,9 +145,6 @@ class TaskManager:
             else:
                 continue
 
-            if self.interrupted:
-                return
-
             row = rows.get(iata, None)
             if not row:
                 rows[iata] = t
@@ -164,14 +153,8 @@ class TaskManager:
                 rows[iata] = t
                 self.db.execute(update_airport, t)
 
-    def updateairlines(self):
-        if self.interrupted:
-            return
-
-        json = self.ptx_client.get('/v2/Air/Airline')
-
-        if self.interrupted:
-            return
+    async def updateairlines(self):
+        json = await self.ptx_client.get('/v2/Air/Airline')
 
         rows = self.db.query("select name_ch, name_en"
                         "      ,alias_ch, alias_en"
@@ -228,23 +211,14 @@ class TaskManager:
             else:
                 continue
 
-            if self.interrupted:
-                return
-
             row = rows.get(iata, None)
             if not row:
                 self.db.execute(add_airline, t)
             elif t != row:
                 self.db.execute(update_airline, t)
 
-    def updateflights(self):
-        if self.interrupted:
-            return
-
-        flight_list = self.ptx_client.get('/v2/Air/FIDS/Flight')
-
-        if self.interrupted:
-            return
+    async def updateflights(self):
+        flight_list = await self.ptx_client.get('/v2/Air/FIDS/Flight')
 
         for data in flight_list:
             cur_flight = Flight(data)
@@ -252,23 +226,14 @@ class TaskManager:
             if not cur_flight.isvalid:
                 continue
 
-            if self.interrupted:
-                return
-
             old_flight = self.__get_flight_update_time(
                     cur_flight.flight_date,
                     cur_flight.flight_no,
                     cur_flight.airline_iata
                 )
 
-            if self.interrupted:
-                return
-
             if old_flight:
                 if old_flight['update_time'] < cur_flight.update_time:
                     self.__update_flight(cur_flight)
             else:
                 self.__insert_flight(cur_flight)
-
-    def interrupt(self):
-        self.interrupted = True
