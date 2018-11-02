@@ -4,23 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"asn1crypto" = "*"
-certifi = "*"
-cffi = "*"
-chardet = "*"
-cryptography = "*"
 django-filter = "*"
 djangorestframework = "*"
-idna = "*"
 mysql-connector-python = "==8.*"
 protobuf = "*"
-pycparser = "*"
 pytz = "*"
-requests = "*"
 six = "*"
-"urllib3" = "*"
 Django = "*"
-Markdown = "*"
 
 [dev-packages]
 pylint = "*"
