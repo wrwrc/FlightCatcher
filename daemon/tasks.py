@@ -176,7 +176,7 @@ class TaskManager:
         update_airline = (
             'UPDATE airlines '
             'SET name_ch=%s, name_en=%s, '
-            '    alias_ch=%s, aliax_en=%s, '
+            '    alias_ch=%s, alias_en=%s, '
             '    icao=%s, '
             '    email=%s, '
             '    phone=%s, '
