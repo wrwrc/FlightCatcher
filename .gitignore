@@ -106,3 +106,4 @@ venv.bak/
 # local settings
 local.py
 cron_job/config.py
+/.vscode
